@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'user/knowledge-management',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '9f0a35b17ffdb44fc87a0f7c164ee86c8ade4613',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -194,9 +194,9 @@
             'dev_requirement' => false,
         ),
         'user/knowledge-management' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '9f0a35b17ffdb44fc87a0f7c164ee86c8ade4613',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
