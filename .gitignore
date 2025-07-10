@@ -1,0 +1,31 @@
+# Composer
+/vendor/
+/composer.lock
+
+# IDE/editor
+/.vscode/
+/.idea/
+/nbproject/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+/logs/
+/*.log
+
+# Cache/temp
+/cache/
+/tmp/
+*.bak
+
+# Environment files
+.env
+.env.*
+
+# PHPUnit
+.phpunit.result.cache
+
+# Slim-specific
+/public/.htaccess
