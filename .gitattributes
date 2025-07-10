@@ -1,0 +1,26 @@
+# Atur agar semua file teks diformat dengan LF di repo
+* text=auto
+
+# Secara eksplisit pastikan file utama project pakai LF
+*.php     text eol=lf
+*.html    text eol=lf
+*.css     text eol=lf
+*.js      text eol=lf
+*.json    text eol=lf
+*.yml     text eol=lf
+*.md      text eol=lf
+*.twig    text eol=lf
+*.xml     text eol=lf
+*.ini     text eol=lf
+
+# Biarkan file biner tidak diubah
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.woff    binary
+*.woff2   binary
+*.ttf     binary
+*.eot     binary
+*.pdf     binary
