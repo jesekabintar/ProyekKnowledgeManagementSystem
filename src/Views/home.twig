@@ -1,7 +1,11 @@
 {% extends "layout/layout.twig" %}
 
-
 {% block content %}
-    <h1>Selamat datang di Knowledge Management</h1>
-    <p>Ini adalah halaman home.</p>
+    <h1>Dashboard Knowledge Management</h1>
+
+    {% if session.user %}
+        <p>Halo, {{ session.user.username }} ({{ session.user.role }})</p>
+    {% else %}
+        <p>Silakan login untuk melanjutkan.</p>
+    {% endif %}
 {% endblock %}

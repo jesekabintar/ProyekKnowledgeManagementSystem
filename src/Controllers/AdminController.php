@@ -1,11 +1,12 @@
 <?php
+
 namespace Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
-class HomeController
+class AdminController
 {
     private $view;
 
@@ -14,10 +15,13 @@ class HomeController
         $this->view = $view;
     }
 
-    public function index(Request $request, Response $response)
+    public function index(Request $request, Response $response): Response
     {
-        return $this->view->render($response, 'home.twig', [
-            'title' => 'Dashboard KM'
+        $user = $_SESSION['user'] ?? null;
+
+        return $this->view->render($response, 'admin/dashboard.twig', [
+            'title' => 'Admin Dashboard',
+            'user' => $user
         ]);
     }
 }

@@ -1,0 +1,9 @@
+{% extends "layout/layout.twig" %}
+
+{% block content %}
+<div class="container">
+    <h2>Admin Dashboard</h2>
+    <p>Selamat datang, {{ user.username }}</p>
+    <a href="/logout">Logout</a>
+</div>
+{% endblock %}
