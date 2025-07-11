@@ -1,0 +1,34 @@
+{% extends "layout/layout.twig" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Postingan Saya</h3>
+    <a href="/kontributor/post/create" class="btn btn-primary mb-3">+ Buat Post</a>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Judul</th>
+                <th>Kategori</th>
+                <th>Waktu</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in posts %}
+                <tr>
+                    <td>{{ p.title }}</td>
+                    <td>{{ p.category_name }}</td>
+                    <td>{{ p.created_at }}</td>
+                    <td>
+                        <a href="/kontributor/post/{{ p.id }}/edit" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="/kontributor/post/{{ p.id }}/delete" class="btn btn-sm btn-danger" onclick="return confirm('Hapus?')">Hapus</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4">Belum ada post.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

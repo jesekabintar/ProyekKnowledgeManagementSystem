@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
@@ -12,10 +14,13 @@ require __DIR__ . '/../vendor/autoload.php';
 $container = new Container();
 AppFactory::setContainer($container);
 
-// Twig
-$container->set('view', function () {
-    return Twig::create(__DIR__ . '/../src/Views', ['cache' => false]);
+// Twig: gunakan satu kali saja
+$container->set(Twig::class, function () {
+    $twig = Twig::create(__DIR__ . '/../src/Views', ['cache' => false]);
+    $twig->getEnvironment()->addGlobal('session', $_SESSION);
+    return $twig;
 });
+$container->set('view', fn($c) => $c->get(Twig::class));
 
 // Medoo
 $container->set(Medoo::class, function () {
@@ -32,25 +37,29 @@ $container->set(Medoo::class, function () {
 use Controllers\AuthController;
 use Controllers\AdminController;
 use Controllers\HomeController;
+use Controllers\PostController;
 
-$container->set(AuthController::class, function ($c) {
-    return new AuthController($c->get('view'), $c->get(Medoo::class));
-});
+$container->set(AuthController::class, fn($c) =>
+    new AuthController($c->get(Twig::class), $c->get(Medoo::class))
+);
 
-$container->set(AdminController::class, function ($c) {
-    return new AdminController($c->get('view'), $c->get(Medoo::class));
-});
+$container->set(AdminController::class, fn($c) =>
+    new AdminController($c->get(Twig::class), $c->get(Medoo::class))
+);
 
-$container->set(HomeController::class, function ($c) {
-    return new HomeController($c->get('view'));
-});
+$container->set(HomeController::class, fn($c) =>
+    new HomeController($c->get(Twig::class))
+);
 
+$container->set(PostController::class, fn($c) =>
+    new PostController($c->get(Twig::class), $c->get(Medoo::class))
+);
+
+// App & Middleware
 $app = AppFactory::create();
-
-// Middleware
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
-$app->add(TwigMiddleware::createFromContainer($app, 'view'));
+$app->add(TwigMiddleware::createFromContainer($app, Twig::class));
 
 // Load routes
 (require __DIR__ . '/../routes/web.php')($app);

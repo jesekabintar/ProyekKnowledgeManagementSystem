@@ -1,4 +1,4 @@
-<?php
+<?php 
 namespace Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
@@ -26,12 +26,21 @@ class AuthController
     {
         $data = (array)$request->getParsedBody();
 
+        if (empty($data['username']) || empty($data['password'])) {
+            return $this->view->render($response, 'auth/login.twig', [
+                'error' => 'Username dan password wajib diisi!'
+            ]);
+        }
+
         $user = $this->db->get("users", "*", [
             "username" => $data['username'],
-            "password" => md5($data['password']) // gunakan password_hash di produksi
+            "password" => md5($data['password']),
+            "deleted_at" => null
         ]);
 
         if ($user) {
+            session_unset();
+            session_regenerate_id(true);
             $_SESSION['user'] = $user;
             return $response->withHeader('Location', '/')->withStatus(302);
         }

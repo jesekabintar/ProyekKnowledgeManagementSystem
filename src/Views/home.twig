@@ -1,11 +1,19 @@
 {% extends "layout/layout.twig" %}
 
 {% block content %}
-    <h1>Dashboard Knowledge Management</h1>
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-5 mb-3">Dashboard Knowledge Management</h1>
 
-    {% if session.user %}
-        <p>Halo, {{ session.user.username }} ({{ session.user.role }})</p>
-    {% else %}
-        <p>Silakan login untuk melanjutkan.</p>
-    {% endif %}
+        {% if message %}
+            <div class="alert alert-warning mt-4" role="alert">
+                {{ message }}
+            </div>
+        {% else %}
+            <p class="lead">Selamat datang di sistem manajemen pengetahuan.</p>
+            <p>Silakan login untuk melanjutkan ke halaman dashboard sesuai peran Anda.</p>
+            <a href="/login" class="btn btn-primary mt-3">Login</a>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

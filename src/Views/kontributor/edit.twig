@@ -1,0 +1,34 @@
+{% extends "layout/layout.twig" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Edit Postingan</h3>
+
+    <form method="POST" action="/kontributor/post/{{ post.id }}/update">
+        <div class="mb-3">
+            <label for="judul" class="form-label">Judul</label>
+            <input type="text" name="judul" class="form-control" id="judul" value="{{ post.title }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="category_id" class="form-label">Kategori</label>
+            <select name="category_id" class="form-select" id="category_id" required>
+                {% for category in categories %}
+                    <option value="{{ category.id }}"
+                        {% if category.id == post.category_id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="isi" class="form-label">Konten</label>
+            <textarea name="isi" id="isi" class="form-control" rows="6" required>{{ post.content }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Simpan Perubahan</button>
+        <a href="/kontributor/postsaya" class="btn btn-secondary">Batal</a>
+    </form>
+</div>
+{% endblock %}

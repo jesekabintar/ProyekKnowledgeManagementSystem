@@ -1,23 +1,56 @@
 {% extends "layout/layout.twig" %}
 
 {% block content %}
-<div class="container">
-    <h2>Login</h2>
+<div class="container mt-5" style="max-width: 500px;">
+    <div class="card shadow">
+        <div class="card-body">
+            <h3 class="mb-4 text-center">
+                <i class="bi bi-person-lock"></i> Login
+            </h3>
 
-    {% if error %}
-        <div style="color: red;">{{ error }}</div>
-    {% endif %}
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endif %}
 
-    <form method="POST" action="/login">
-        <div>
-            <label>Username</label>
-            <input type="text" name="username" required>
+            <form method="POST" action="/login">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" name="username" id="username" class="form-control" required autofocus>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <input type="password" name="password" id="password" class="form-control" required>
+                        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                            <i class="bi bi-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-3">
+                    <i class="bi bi-box-arrow-in-right"></i> Masuk
+                </button>
+            </form>
         </div>
-        <div>
-            <label>Password</label>
-            <input type="password" name="password" required>
-        </div>
-        <button type="submit">Login</button>
-    </form>
+    </div>
 </div>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById("password");
+    const icon = document.getElementById("toggleIcon");
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+</script>
 {% endblock %}
