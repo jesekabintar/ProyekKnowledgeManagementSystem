@@ -1,0 +1,63 @@
+{% extends "layout/layout.twig" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2>{{ post.title }}</h2>
+    <p class="text-muted">{{ post.category }}</p>
+    <p>{{ post.content|raw }}</p>
+
+    <hr>
+    <h4>Komentar & Rating</h4>
+
+    {% if session.user is defined and session.user.role == 'user' %}
+        <form method="post" action="/comments/add">
+            <input type="hidden" name="post_id" value="{{ post.id }}">
+
+            <div class="mb-3">
+                <label for="comment">Komentar:</label>
+                <textarea name="comment" class="form-control" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="rating">Rating:</label>
+                <select name="rating" class="form-select">
+                    <option value="1">★☆☆☆☆</option>
+                    <option value="2">★★☆☆☆</option>
+                    <option value="3">★★★☆☆</option>
+                    <option value="4">★★★★☆</option>
+                    <option value="5">★★★★★</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Kirim Komentar</button>
+        </form>
+    {% else %}
+        <p class="text-muted">Silakan login sebagai pengguna untuk memberikan komentar.</p>
+    {% endif %}
+
+    <hr>
+
+   {% for c in comments %}
+    <div class="border p-3 rounded mb-3 d-flex justify-content-between align-items-start flex-column flex-md-row">
+        <div class="flex-grow-1 mb-2 mb-md-0">
+            <strong>Rating: {{ c.rating }} / 5</strong>
+            <p class="mb-1">{{ c.comment }}</p>
+            <small class="text-muted">{{ c.created_at }}</small>
+        </div>
+
+        {% if session.user is defined and (session.user.role in ['admin','kontributor'] or session.user.id == c.user_id) %}
+            <form method="post" action="/comments/{{ c.id }}/delete" style="margin-left: auto;">
+                <button class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus komentar ini?')">
+                    Hapus
+                </button>
+            </form>
+        {% endif %}
+    </div>
+{% else %}
+    <p>Belum ada komentar untuk cerita ini.</p>
+{% endfor %}
+
+
+</div>
+{% endblock %}

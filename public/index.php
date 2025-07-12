@@ -32,6 +32,8 @@ $container->set(Medoo::class, function () {
         'password' => ''
     ]);
 });
+$container->set('db', fn($c) => $c->get(Medoo::class));
+
 
 // Controller DI binding
 use Controllers\AuthController;
@@ -48,8 +50,9 @@ $container->set(AdminController::class, fn($c) =>
 );
 
 $container->set(HomeController::class, fn($c) =>
-    new HomeController($c->get(Twig::class))
+    new HomeController($c->get(Twig::class), $c->get(Medoo::class))
 );
+
 
 $container->set(PostController::class, fn($c) =>
     new PostController($c->get(Twig::class), $c->get(Medoo::class))

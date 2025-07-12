@@ -3,81 +3,160 @@ namespace Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Medoo\Medoo;
+use Slim\Exception\HttpNotFoundException;
 use Slim\Views\Twig;
+use Medoo\Medoo;
 
 class PostController
 {
-    private Twig $view;
-    private Medoo $db;
+    public function __construct(
+        private Twig  $view,
+        private Medoo $db,
+    ) {}
 
-    public function __construct(Twig $view, Medoo $db)
-    {
-        $this->view = $view;
-        $this->db = $db;
-    }
-
+    /**
+     * Daftar semua posting milik kontributor yang sedang login.
+     */
     public function index(Request $request, Response $response): Response
     {
-        $userId = $_SESSION['user']['id'];
-        $posts = $this->db->select("posts", "*", ["user_id" => $userId]);
+        $userId = $_SESSION['user']['id'] ?? null;
+        if (!$userId) {
+            return $response->withHeader('Location', '/login')->withStatus(302);
+        }
 
-        return $this->view->render($response, "kontributor/postsaya.twig", [
-            'posts' => $posts
+        $posts = $this->db->select('posts', [
+            '[>]categories' => ['category_id' => 'id'],
+        ], [
+            'posts.id',
+            'posts.title',
+            'posts.created_at',
+            'categories.name(category)',
+        ], [
+            'posts.user_id' => $userId,
+            'ORDER'         => ['posts.created_at' => 'DESC'],
         ]);
+
+        return $this->view->render($response, 'kontributor/postsaya.twig', compact('posts'));
     }
 
-   public function create(Request $request, Response $response): Response
-{
-    $categories = $this->db->select("categories", ["id", "name"]);
+    /**
+     * Form tambah posting.
+     */
+    public function create(Request $request, Response $response): Response
+    {
+        $categories = $this->db->select('categories', ['id', 'name']);
+        return $this->view->render($response, 'kontributor/create.twig', compact('categories'));
+    }
 
-    return $this->view->render($response, "kontributor/create.twig", [
-        'categories' => $categories
-    ]);
-}
-
-
+    /**
+     * Simpan posting baru.
+     */
     public function store(Request $request, Response $response): Response
-{
-    $data = (array)$request->getParsedBody();
+    {
+        $data   = (array) $request->getParsedBody();
+        $userId = $_SESSION['user']['id'] ?? null;
 
-    $this->db->insert("posts", [
-        "user_id" => $_SESSION['user']['id'],
-        "category_id" => $data['category_id'],
-        "title" => $data['judul'],
-        "content" => $data['isi']
-    ]);
+        if (!$userId) {
+            return $response->withHeader('Location', '/login')->withStatus(302);
+        }
 
-    return $response->withHeader('Location', '/kontributor/postsaya')->withStatus(302);
-}
+        $this->db->insert('posts', [
+            'user_id'     => $userId,
+            'category_id' => $data['category_id'],
+            'title'       => $data['title'],
+            'content'     => $data['content'],
+        ]);
 
+        return $response->withHeader('Location', '/kontributor/postsaya')->withStatus(302);
+    }
 
+    /**
+     * Form edit posting.
+     */
     public function edit(Request $request, Response $response, array $args): Response
     {
-        $id = $args['id'];
-        $post = $this->db->get("posts", "*", ["id" => $id]);
+        $postId = $args['id'];
+        $post = $this->db->get('posts', '*', ['id' => $postId]);
 
-        return $this->view->render($response, "kontributor/edit.twig", ['post' => $post]);
+        if (!$post) {
+            throw new HttpNotFoundException($request);
+        }
+
+        $categories = $this->db->select('categories', ['id', 'name']);
+        return $this->view->render($response, 'kontributor/edit.twig', compact('post', 'categories'));
     }
 
+    /**
+     * Update posting.
+     */
     public function update(Request $request, Response $response, array $args): Response
     {
-        $id = $args['id'];
-        $data = (array)$request->getParsedBody();
+        $postId = $args['id'];
+        $data   = (array) $request->getParsedBody();
 
-        $this->db->update("posts", [
-            "judul" => $data['judul'],
-            "isi" => $data['isi']
-        ], ["id" => $id]);
+        $this->db->update('posts', [
+            'title'   => $data['title'],
+            'content' => $data['content'],
+        ], [
+            'id' => $postId,
+        ]);
 
         return $response->withHeader('Location', '/kontributor/postsaya')->withStatus(302);
     }
 
+    /**
+     * Hapus posting.
+     */
     public function delete(Request $request, Response $response, array $args): Response
     {
-        $id = $args['id'];
-        $this->db->delete("posts", ["id" => $id]);
+        $postId = $args['id'];
+        $this->db->delete('posts', ['id' => $postId]);
 
         return $response->withHeader('Location', '/kontributor/postsaya')->withStatus(302);
+    }
+
+    /**
+     * Tampilkan satu posting lengkap beserta komentar & rating.
+     */
+    public function show(Request $request, Response $response, array $args): Response
+    {
+        $postId = $args['id'];
+
+        $post = $this->db->get('posts', '*', ['id' => $postId]);
+        if (!$post) {
+            throw new HttpNotFoundException($request);
+        }
+
+        // Komentar + rating
+        $comments = $this->db->select('comments', [
+    '[>]users' => ['user_id' => 'id']
+], [
+    'comments.id',
+    'comments.user_id',          // ⬅️ ambil pemilik komentar
+    'comments.comment',
+    'comments.rating',
+    'comments.created_at',
+    'users.username'
+], [
+    'comments.post_id' => $postId,
+    'ORDER'            => ['comments.created_at' => 'DESC'],
+]);
+
+
+        // Rating milik user login (jika ada)
+        $userId = $_SESSION['user']['id'] ?? null;
+        $userRating = null;
+        if ($userId) {
+            $userRating = $this->db->get('comments', 'rating', [
+                'post_id' => $postId,
+                'user_id' => $userId,
+            ]);
+        }
+
+        return $this->view->render($response, 'layout/story.twig', [
+            'post'       => $post,
+            'comments'   => $comments,
+            'userRating' => $userRating,
+        ]);
     }
 }

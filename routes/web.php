@@ -1,13 +1,15 @@
 <?php
 use Slim\App;
 use Slim\Views\Twig;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Middleware\RoleMiddleware;
 use Controllers\AuthController;
-use Controllers\AdminController;
 use Controllers\HomeController;
 use Controllers\PostController;
-use Middleware\RoleMiddleware;
+use Controllers\AdminController;
+use Controllers\RatingController;
+use Controllers\CommentController;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
 
 return function (App $app) {
@@ -84,22 +86,58 @@ return function (App $app) {
     $app->post('/kontributor/post', [PostController::class, 'store'])
         ->add(RoleMiddleware::only('kontributor'));
 
-    $app->get('/kontributor/post/edit/{id}', [PostController::class, 'edit'])
-        ->add(RoleMiddleware::only('kontributor'));
+    $app->get('/kontributor/post/{id}/edit', [PostController::class, 'edit'])
+    ->add(RoleMiddleware::only('kontributor'));
 
-    $app->post('/kontributor/post/update/{id}', [PostController::class, 'update'])
-        ->add(RoleMiddleware::only('kontributor'));
+$app->post('/kontributor/post/{id}/update', [PostController::class, 'update'])
+    ->add(RoleMiddleware::only('kontributor'));
 
-    $app->get('/kontributor/post/delete/{id}', [PostController::class, 'delete'])
-        ->add(RoleMiddleware::only('kontributor'));
+$app->post('/kontributor/post/{id}/delete', [PostController::class, 'delete'])
+    ->add(RoleMiddleware::only('kontributor'));
+
 
     /**
      * PENGGUNA BIASA
      */
     $app->get('/pengguna', function (Request $request, Response $response) use ($container) {
-        $view = $container->get('view');
-        return $view->render($response, 'pengguna.twig', [
-            'title' => 'Halaman Pengguna'
-        ]);
-    })->add(RoleMiddleware::only(['admin', 'kontributor', 'user']));
+    $view = $container->get('view');
+    $db = $container->get('db');
+
+    $posts = $db->select('posts', [
+        '[>]categories' => ['category_id' => 'id'],
+        '[>]users' => ['user_id' => 'id']
+    ], [
+        'posts.id',
+        'posts.title',
+        'posts.content',
+        'posts.created_at',
+        'categories.name(category)',
+        'users.username'
+    ], [
+        'ORDER' => ['posts.created_at' => 'DESC']
+    ]);
+
+    return $view->render($response, 'pengguna.twig', [
+        'title' => 'Halaman Pengguna',
+        'posts' => $posts,
+        'session' => $_SESSION
+    ]);
+})->add(RoleMiddleware::only(['admin', 'kontributor', 'user']));
+
+
+    // $app->get('/story/{id}', [HomeController::class, 'showPost']);
+$app->post('/comments/add', [CommentController::class, 'add']);
+
+// routes
+$app->post('/ratings/add', [RatingController::class, 'add'])
+    ->add(RoleMiddleware::only(['user','kontributor','admin']));
+
+    $app->get('/story/{id}', [PostController::class, 'show']);
+
+// pakai POST supaya aman dari pre‑fetch GET
+$app->post('/comments/{id}/delete', [CommentController::class, 'delete'])
+     ->setName('comment.delete');
+
+
+
 };

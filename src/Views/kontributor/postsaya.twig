@@ -18,7 +18,7 @@
             {% for p in posts %}
                 <tr>
                     <td>{{ p.title }}</td>
-                    <td>{{ p.category_name }}</td>
+                    <td>{{ p.category }}</td>
                     <td>{{ p.created_at }}</td>
                     <td>
                         <a href="/kontributor/post/{{ p.id }}/edit" class="btn btn-sm btn-warning">Edit</a>
