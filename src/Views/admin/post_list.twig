@@ -1,0 +1,30 @@
+{% extends "layout/layout.twig" %}
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-3">Semua Cerita</h4>
+  <table class="table table-hover">
+    <thead class="table-light">
+      <tr><th>ID</th><th>Judul</th><th>Kategori</th><th>Penulis</th><th>Tgl</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+      {% for p in posts %}
+        <tr class="{{ p.deleted_at ? 'table-warning' : '' }}">
+          <td>{{ p.id }}</td>
+          <td>{{ p.title }}</td>
+          <td>{{ p.category }}</td>
+          <td>{{ p.username }}</td>
+          <td>{{ p.created_at|date("d‑m‑Y") }}</td>
+          <td>
+            <a href="/story/{{ p.id }}" class="btn btn-sm btn-outline-info me-1">Lihat</a>
+            <form method="POST" action="/admin/post/{{ p.id }}/delete" style="display:inline">
+              <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus cerita?')">Hapus</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="text-center text-muted">Belum ada cerita.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

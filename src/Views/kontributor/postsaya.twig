@@ -3,14 +3,15 @@
 {% block content %}
 <div class="container mt-4">
     <h3>Postingan Saya</h3>
-    <a href="/kontributor/post/create" class="btn btn-primary mb-3">+ Buat Post</a>
+    <a href="/kontributor/post" class="btn btn-primary mb-3">+ Buat Post</a>
 
-    <table class="table table-bordered">
+    <table class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th>Judul</th>
                 <th>Kategori</th>
                 <th>Waktu</th>
+                <th>Lampiran</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -21,12 +22,23 @@
                     <td>{{ p.category }}</td>
                     <td>{{ p.created_at }}</td>
                     <td>
+                        {% if p.attachment %}
+                            <img src="/uploads/{{ p.attachment }}" alt="Lampiran" style="max-height: 60px;">
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
                         <a href="/kontributor/post/{{ p.id }}/edit" class="btn btn-sm btn-warning">Edit</a>
-                        <a href="/kontributor/post/{{ p.id }}/delete" class="btn btn-sm btn-danger" onclick="return confirm('Hapus?')">Hapus</a>
+
+                        <form method="POST" action="/kontributor/post/{{ p.id }}/delete"
+                              style="display:inline;" onsubmit="return confirm('Hapus?')">
+                            <button class="btn btn-sm btn-danger">Hapus</button>
+                        </form>
                     </td>
                 </tr>
             {% else %}
-                <tr><td colspan="4">Belum ada post.</td></tr>
+                <tr><td colspan="5" class="text-center">Belum ada post.</td></tr>
             {% endfor %}
         </tbody>
     </table>

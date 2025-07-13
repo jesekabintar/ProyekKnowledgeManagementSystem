@@ -1,0 +1,88 @@
+{# views/admin/manage_category_tag.twig #}
+{% extends "layout/layout.twig" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-4">Kelola Kategori & Tag</h3>
+
+  {# ── Form tambah kategori & tag ─────────────────────────────────────────── #}
+  <form method="POST" action="/admin/kategori-tag" class="card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label">Kategori Baru</label>
+          <input type="text" name="category" class="form-control" placeholder="Contoh: Teknologi">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">Tag Baru</label>
+          <input type="text" name="tag" class="form-control" placeholder="Contoh: PHP, Machine Learning">
+        </div>
+        <div class="col-md-2 d-grid">
+          <button class="btn btn-primary">Tambah</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  {# ── Daftar kategori & tag ──────────────────────────────────────────────── #}
+  <div class="row g-4">
+    {# KATEGORI #}
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <span>Kategori</span>
+          <span class="badge bg-light text-dark">{{ categories|length }}</span>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm table-hover mb-0 align-middle">
+            <tbody>
+              {% for c in categories %}
+                <tr>
+                  <td>{{ c.name }}</td>
+                  <td class="text-end">
+                    <a href="/admin/kategori/{{ c.id }}/edit" class="btn btn-outline-primary btn-sm me-1">Edit</a>
+                    <a href="/admin/kategori/{{ c.id }}/delete"
+                       class="btn btn-outline-danger btn-sm"
+                       onclick="return confirm('Hapus kategori?')">Hapus</a>
+                  </td>
+                </tr>
+              {% else %}
+                <tr><td class="text-muted text-center p-3">Belum ada kategori.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    {# TAG #}
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+          <span>Tag</span>
+          <span class="badge bg-light text-dark">{{ tags|length }}</span>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm table-hover mb-0 align-middle">
+            <tbody>
+              {% for t in tags %}
+                <tr>
+                  <td>{{ t.name }}</td>
+                  <td class="text-end">
+                    <a href="/admin/tag/{{ t.id }}/edit" class="btn btn-outline-primary btn-sm me-1">Edit</a>
+                    <a href="/admin/tag/{{ t.id }}/delete"
+                       class="btn btn-outline-danger btn-sm"
+                       onclick="return confirm('Hapus tag?')">Hapus</a>
+                  </td>
+                </tr>
+              {% else %}
+                <tr><td class="text-muted text-center p-3">Belum ada tag.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{# views/admin/user_edit.twig #}
+{% extends "layout/layout.twig" %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 550px;">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">Edit Pengguna</h5>
+    </div>
+
+    <form method="POST" action="/admin/users/edit/{{ user.id }}">
+      <div class="card-body">
+
+        {#–– Username ––#}
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-control"
+            value="{{ user.username }}"
+            required
+          >
+        </div>
+
+        {#–– Role ––#}
+        <div class="mb-4">
+          <label for="role" class="form-label">Role</label>
+          <select id="role" name="role" class="form-select">
+            <option value="admin"       {{ user.role == 'admin'       ? 'selected' }}>Admin</option>
+            <option value="kontributor" {{ user.role == 'kontributor' ? 'selected' }}>Kontributor</option>
+            <option value="user"        {{ user.role == 'user'        ? 'selected' }}>User</option>
+          </select>
+        </div>
+
+        {#–– Action buttons ––#}
+        <div class="d-flex justify-content-end">
+          <a href="/admin" class="btn btn-outline-secondary me-2">Batal</a>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

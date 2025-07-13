@@ -7,7 +7,7 @@
         <span class="text-muted">Selamat datang, <strong>{{ user.username }}</strong></span>
     </div>
 
-    <div class="card">
+    <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
             Daftar Pengguna Aktif
         </div>
@@ -18,7 +18,7 @@
                         <th scope="col">ID</th>
                         <th scope="col">Username</th>
                         <th scope="col">Role</th>
-                        <th scope="col">Aksi</th>
+                        <th scope="col" colspan="2">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,6 +37,8 @@
                                 </span>
                             </td>
                             <td>
+                                <a href="/admin/users/edit/{{ u.id }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                           
                                 <a href="/admin/delete/{{ u.id }}"
                                    onclick="return confirm('Yakin ingin hapus user ini?')"
                                    class="btn btn-sm btn-outline-danger">
@@ -46,12 +48,18 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="4" class="text-center text-muted">Tidak ada pengguna yang terdaftar.</td>
+                            <td colspan="5" class="text-center text-muted">Tidak ada pengguna yang terdaftar.</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="mt-3 d-flex justify-content-end">
+        <a href="/admin/kategori-tag" class="btn btn-outline-primary">
+            <i class="bi bi-tags"></i> Kelola Kategori & Tag
+        </a>
     </div>
 </div>
 {% endblock %}

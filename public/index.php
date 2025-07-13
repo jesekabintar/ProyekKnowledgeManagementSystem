@@ -67,5 +67,10 @@ $app->add(TwigMiddleware::createFromContainer($app, Twig::class));
 // Load routes
 (require __DIR__ . '/../routes/web.php')($app);
 
+
+foreach ($app->getRouteCollector()->getRoutes() as $route) {
+    error_log('[ROUTE] ' . implode('|', $route->getMethods()) . ' ' . $route->getPattern());
+}
+
 // Run
 $app->run();

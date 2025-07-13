@@ -1,0 +1,20 @@
+{% extends "layout/layout.twig" %}
+{% block content %}
+<div class="container mt-4" style="max-width:450px;">
+  <div class="card">
+    <div class="card-header bg-primary text-white">Edit Kategori</div>
+    <form method="POST" action="/admin/kategori/{{ category.id }}/edit">
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">Nama Kategori</label>
+          <input type="text" name="name" class="form-control" value="{{ category.name }}" required>
+        </div>
+        <div class="d-flex justify-content-end">
+          <a href="/admin/kategori-tag" class="btn btn-outline-secondary me-2">Batal</a>
+          <button class="btn btn-primary">Simpan</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

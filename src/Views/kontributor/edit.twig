@@ -4,10 +4,10 @@
 <div class="container mt-4">
     <h3>Edit Postingan</h3>
 
-    <form method="POST" action="/kontributor/post/{{ post.id }}/update">
+    <form method="POST" action="/kontributor/post/{{ post.id }}/update" enctype="multipart/form-data">
         <div class="mb-3">
-            <label for="judul" class="form-label">Judul</label>
-            <input type="text" name="judul" class="form-control" id="judul" value="{{ post.title }}" required>
+            <label for="title" class="form-label">Judul</label>
+            <input type="text" name="title" class="form-control" id="title" value="{{ post.title }}" required>
         </div>
 
         <div class="mb-3">
@@ -23,8 +23,18 @@
         </div>
 
         <div class="mb-3">
-            <label for="isi" class="form-label">Konten</label>
-            <textarea name="isi" id="isi" class="form-control" rows="6" required>{{ post.content }}</textarea>
+            <label for="content" class="form-label">Konten</label>
+            <textarea name="content" id="content" class="form-control" rows="6" required>{{ post.content }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="attachment" class="form-label">Lampiran (Opsional)</label>
+            {% if post.attachment %}
+                <p class="mb-2">File saat ini: 
+                    <a href="/uploads/{{ post.attachment }}" target="_blank">{{ post.attachment }}</a>
+                </p>
+            {% endif %}
+            <input type="file" class="form-control" name="attachment" id="attachment">
         </div>
 
         <button type="submit" class="btn btn-success">Simpan Perubahan</button>

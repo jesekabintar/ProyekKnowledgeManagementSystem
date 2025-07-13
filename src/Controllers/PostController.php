@@ -14,9 +14,7 @@ class PostController
         private Medoo $db,
     ) {}
 
-    /**
-     * Daftar semua posting milik kontributor yang sedang login.
-     */
+    // Daftar semua posting milik kontributor
     public function index(Request $request, Response $response): Response
     {
         $userId = $_SESSION['user']['id'] ?? null;
@@ -25,54 +23,60 @@ class PostController
         }
 
         $posts = $this->db->select('posts', [
-            '[>]categories' => ['category_id' => 'id'],
-        ], [
-            'posts.id',
-            'posts.title',
-            'posts.created_at',
-            'categories.name(category)',
-        ], [
-            'posts.user_id' => $userId,
-            'ORDER'         => ['posts.created_at' => 'DESC'],
-        ]);
+    '[>]categories' => ['category_id' => 'id'],
+], [
+    'posts.id',
+    'posts.title',
+    'posts.created_at',
+    'posts.attachment',
+    'categories.name(category)',
+], [
+    'posts.user_id' => $userId,
+    'ORDER' => ['posts.created_at' => 'DESC'],
+]);
+
 
         return $this->view->render($response, 'kontributor/postsaya.twig', compact('posts'));
     }
 
-    /**
-     * Form tambah posting.
-     */
+    // Form tambah posting
     public function create(Request $request, Response $response): Response
     {
         $categories = $this->db->select('categories', ['id', 'name']);
         return $this->view->render($response, 'kontributor/create.twig', compact('categories'));
     }
 
-    /**
-     * Simpan posting baru.
-     */
+    // Simpan posting baru
     public function store(Request $request, Response $response): Response
-    {
-        $data   = (array) $request->getParsedBody();
-        $userId = $_SESSION['user']['id'] ?? null;
+{
+    $data = (array) $request->getParsedBody();
+    $uploadedFiles = $request->getUploadedFiles();
+    $userId = $_SESSION['user']['id'] ?? null;
 
-        if (!$userId) {
-            return $response->withHeader('Location', '/login')->withStatus(302);
-        }
-
-        $this->db->insert('posts', [
-            'user_id'     => $userId,
-            'category_id' => $data['category_id'],
-            'title'       => $data['title'],
-            'content'     => $data['content'],
-        ]);
-
-        return $response->withHeader('Location', '/kontributor/postsaya')->withStatus(302);
+    if (!$userId) {
+        return $response->withHeader('Location', '/login')->withStatus(302);
     }
 
-    /**
-     * Form edit posting.
-     */
+    $filename = null;
+    if (isset($uploadedFiles['attachment']) && $uploadedFiles['attachment']->getError() === UPLOAD_ERR_OK) {
+        $file = $uploadedFiles['attachment'];
+        $filename = uniqid() . '_' . $file->getClientFilename();
+        $file->moveTo(__DIR__ . '/../../public/uploads/' . $filename);
+    }
+
+    $this->db->insert('posts', [
+        'user_id'     => $userId,
+        'category_id' => $data['category_id'],
+        'title'       => $data['title'],
+        'content'     => $data['content'],
+        'attachment'  => $filename,
+    ]);
+
+    return $response->withHeader('Location', '/kontributor/postsaya')->withStatus(302);
+}
+
+
+    // Form edit posting
     public function edit(Request $request, Response $response, array $args): Response
     {
         $postId = $args['id'];
@@ -86,66 +90,84 @@ class PostController
         return $this->view->render($response, 'kontributor/edit.twig', compact('post', 'categories'));
     }
 
-    /**
-     * Update posting.
-     */
+    // Update posting
     public function update(Request $request, Response $response, array $args): Response
-    {
-        $postId = $args['id'];
-        $data   = (array) $request->getParsedBody();
+{
+    $postId = $args['id'];
+    $data = (array) $request->getParsedBody();
+    $uploadedFiles = $request->getUploadedFiles();
 
-        $this->db->update('posts', [
-            'title'   => $data['title'],
-            'content' => $data['content'],
-        ], [
-            'id' => $postId,
-        ]);
+    $updateData = [
+        'title'   => $data['title'],
+        'content' => $data['content'],
+        'category_id' => $data['category_id'],
+    ];
 
-        return $response->withHeader('Location', '/kontributor/postsaya')->withStatus(302);
+    if (isset($uploadedFiles['attachment']) && $uploadedFiles['attachment']->getError() === UPLOAD_ERR_OK) {
+        $file = $uploadedFiles['attachment'];
+        $filename = uniqid() . '_' . $file->getClientFilename();
+        $file->moveTo(__DIR__ . '/../../public/uploads/' . $filename);
+        $updateData['attachment'] = $filename;
     }
 
-    /**
-     * Hapus posting.
-     */
+    $this->db->update('posts', $updateData, ['id' => $postId]);
+
+    return $response->withHeader('Location', '/kontributor/postsaya')->withStatus(302);
+}
+
+
+    // Hapus posting (admin atau kontributor)
     public function delete(Request $request, Response $response, array $args): Response
     {
         $postId = $args['id'];
-        $this->db->delete('posts', ['id' => $postId]);
+        $user = $_SESSION['user'] ?? null;
 
-        return $response->withHeader('Location', '/kontributor/postsaya')->withStatus(302);
-    }
-
-    /**
-     * Tampilkan satu posting lengkap beserta komentar & rating.
-     */
-    public function show(Request $request, Response $response, array $args): Response
-    {
-        $postId = $args['id'];
+        if (!$user) {
+            return $response->withHeader('Location', '/login')->withStatus(302);
+        }
 
         $post = $this->db->get('posts', '*', ['id' => $postId]);
         if (!$post) {
             throw new HttpNotFoundException($request);
         }
 
-        // Komentar + rating
+        // Admin bisa hapus semua, kontributor hanya posting miliknya
+        if ($user['role'] === 'admin' || $post['user_id'] == $user['id']) {
+            $this->db->delete('posts', ['id' => $postId]);
+        }
+
+        $redirect = $user['role'] === 'admin' ? '/admin/posts' : '/kontributor/postsaya';
+        return $response->withHeader('Location', $redirect)->withStatus(302);
+    }
+
+    // Menampilkan satu posting lengkap (untuk semua role)
+    public function show(Request $request, Response $response, array $args): Response
+    {
+        $postId = $args['id'];
+        $post = $this->db->get('posts', '*', ['id' => $postId]);
+
+        if (!$post) {
+            throw new HttpNotFoundException($request);
+        }
+
         $comments = $this->db->select('comments', [
-    '[>]users' => ['user_id' => 'id']
-], [
-    'comments.id',
-    'comments.user_id',          // ⬅️ ambil pemilik komentar
-    'comments.comment',
-    'comments.rating',
-    'comments.created_at',
-    'users.username'
-], [
-    'comments.post_id' => $postId,
-    'ORDER'            => ['comments.created_at' => 'DESC'],
-]);
+            '[>]users' => ['user_id' => 'id']
+        ], [
+            'comments.id',
+            'comments.user_id',
+            'comments.comment',
+            'comments.rating',
+            'comments.created_at',
+            'users.username'
+        ], [
+            'comments.post_id' => $postId,
+            'ORDER' => ['comments.created_at' => 'DESC'],
+        ]);
 
-
-        // Rating milik user login (jika ada)
+        // Ambil rating milik user login jika ada
         $userId = $_SESSION['user']['id'] ?? null;
         $userRating = null;
+
         if ($userId) {
             $userRating = $this->db->get('comments', 'rating', [
                 'post_id' => $postId,
@@ -159,4 +181,25 @@ class PostController
             'userRating' => $userRating,
         ]);
     }
+
+    // List semua posting (khusus admin)
+    public function listAll(Request $request, Response $response): Response
+    {
+        $posts = $this->db->select('posts', [
+            '[>]categories' => ['category_id' => 'id'],
+            '[>]users'      => ['user_id' => 'id'],
+        ], [
+            'posts.id',
+            'posts.title',
+            'posts.created_at',
+            'categories.name(category)',
+            'users.username',
+        ], [
+            'ORDER' => ['posts.created_at' => 'DESC'],
+        ]);
+
+        return $this->view->render($response, 'admin/post_list.twig', compact('posts'));
+    }
+
+    
 }

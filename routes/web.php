@@ -11,20 +11,15 @@ use Controllers\CommentController;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-
 return function (App $app) {
     $container = $app->getContainer();
 
-    /**
-     * HALAMAN UTAMA /
-     */
+    /** ===============================
+     *  HALAMAN UTAMA
+     *  ============================== */
     $app->get('/', function (Request $request, Response $response) use ($container) {
         $view = $container->get('view');
 
-        // Log role (debugging)
-        error_log('ROLE: ' . ($_SESSION['user']['role'] ?? 'none'));
-
-        // Belum login
         if (!isset($_SESSION['user'])) {
             return $view->render($response, 'home.twig', [
                 'title' => 'Dashboard KM',
@@ -32,41 +27,49 @@ return function (App $app) {
             ]);
         }
 
-        // Sudah login: redirect sesuai role
-        $user = $_SESSION['user'];
-        $role = $user['role'] ?? null;
+        $role = $_SESSION['user']['role'] ?? null;
 
-        if ($role === 'admin') {
-            return $response->withHeader('Location', '/admin')->withStatus(302);
-        } elseif ($role === 'kontributor') {
-            return $response->withHeader('Location', '/kontributor')->withStatus(302);
-        } elseif ($role === 'user') {
-            return $response->withHeader('Location', '/pengguna')->withStatus(302);
-        }
-
-        // Role tidak dikenali
-        return $response->withHeader('Location', '/login')->withStatus(302);
+        return match ($role) {
+            'admin'        => $response->withHeader('Location', '/admin')->withStatus(302),
+            'kontributor'  => $response->withHeader('Location', '/kontributor')->withStatus(302),
+            'user'         => $response->withHeader('Location', '/pengguna')->withStatus(302),
+            default        => $response->withHeader('Location', '/login')->withStatus(302),
+        };
     });
 
-    /**
-     * AUTH
-     */
+    /** ===============================
+     *  AUTH
+     *  ============================== */
     $app->get('/login', [AuthController::class, 'showLogin']);
     $app->post('/login', [AuthController::class, 'login']);
     $app->get('/logout', [AuthController::class, 'logout']);
 
-    /**
-     * ADMIN
-     */
-    $app->get('/admin', [AdminController::class, 'index'])
-        ->add(RoleMiddleware::only('admin'));
-    
-    $app->get('/admin/delete/{id}', [AdminController::class, 'deleteUser'])
-        ->add(RoleMiddleware::only('admin'));
+    /** ===============================
+     *  ADMIN
+     *  ============================== */
+    $app->get('/admin', [AdminController::class, 'index'])->add(RoleMiddleware::only('admin'));
+    $app->get('/admin/users', [AdminController::class, 'listUsers'])->add(RoleMiddleware::only('admin'));
+    $app->get('/admin/users/edit/{id}', [AdminController::class, 'editUser'])->add(RoleMiddleware::only('admin'));
+    $app->post('/admin/users/edit/{id}', [AdminController::class, 'updateUser'])->add(RoleMiddleware::only('admin'));
+    $app->get('/admin/delete/{id}', [AdminController::class, 'deleteUser'])->add(RoleMiddleware::only('admin'));
 
-    /**
-     * KONTRIBUTOR DASHBOARD
-     */
+    $app->get('/admin/kategori-tag', [AdminController::class, 'manageCategoryTag'])->add(RoleMiddleware::only('admin'));
+    $app->post('/admin/kategori-tag', [AdminController::class, 'storeCategoryTag'])->add(RoleMiddleware::only('admin'));
+
+    $app->get('/admin/kategori/{id}/edit', [AdminController::class, 'editCategory'])->add(RoleMiddleware::only('admin'));
+    $app->post('/admin/kategori/{id}/edit', [AdminController::class, 'updateCategory'])->add(RoleMiddleware::only('admin'));
+    $app->get('/admin/kategori/{id}/delete', [AdminController::class, 'deleteCategory'])->add(RoleMiddleware::only('admin'));
+
+    $app->get('/admin/tag/{id}/edit', [AdminController::class, 'editTag'])->add(RoleMiddleware::only('admin'));
+    $app->post('/admin/tag/{id}/edit', [AdminController::class, 'updateTag'])->add(RoleMiddleware::only('admin'));
+    $app->get('/admin/tag/{id}/delete', [AdminController::class, 'deleteTag'])->add(RoleMiddleware::only('admin'));
+
+    $app->get('/admin/posts', [PostController::class, 'listAll'])->add(RoleMiddleware::only('admin'));
+    $app->post('/admin/post/{id}/delete', [PostController::class, 'delete'])->add(RoleMiddleware::only('admin'));
+
+    /** ===============================
+     *  KONTRIBUTOR (tanpa group)
+     *  ============================== */
     $app->get('/kontributor', function (Request $request, Response $response) use ($container) {
         $view = $container->get('view');
         return $view->render($response, 'kontributor.twig', [
@@ -74,70 +77,52 @@ return function (App $app) {
         ]);
     })->add(RoleMiddleware::only('kontributor'));
 
-    /**
-     * KONTRIBUTOR POST CRUD
-     */
-    $app->get('/kontributor/postsaya', [PostController::class, 'index'])
-        ->add(RoleMiddleware::only('kontributor'));
+    $app->get('/kontributor/postsaya', [PostController::class, 'index'])->add(RoleMiddleware::only('kontributor'));
+    $app->get('/kontributor/post', [PostController::class, 'create'])->add(RoleMiddleware::only('kontributor'));
+    $app->post('/kontributor/post', [PostController::class, 'store'])->add(RoleMiddleware::only('kontributor'));
+    $app->get('/kontributor/post/{id}/edit', [PostController::class, 'edit'])->add(RoleMiddleware::only('kontributor'));
+    $app->post('/kontributor/post/{id}/update', [PostController::class, 'update'])->add(RoleMiddleware::only('kontributor'));
+    $app->post('/kontributor/post/{id}/delete', [PostController::class, 'delete'])->add(RoleMiddleware::only('kontributor'));
 
-    $app->get('/kontributor/post', [PostController::class, 'create'])
-        ->add(RoleMiddleware::only('kontributor'));
-
-    $app->post('/kontributor/post', [PostController::class, 'store'])
-        ->add(RoleMiddleware::only('kontributor'));
-
-    $app->get('/kontributor/post/{id}/edit', [PostController::class, 'edit'])
-    ->add(RoleMiddleware::only('kontributor'));
-
-$app->post('/kontributor/post/{id}/update', [PostController::class, 'update'])
-    ->add(RoleMiddleware::only('kontributor'));
-
-$app->post('/kontributor/post/{id}/delete', [PostController::class, 'delete'])
-    ->add(RoleMiddleware::only('kontributor'));
-
-
-    /**
-     * PENGGUNA BIASA
-     */
+    /** ===============================
+     *  PENGGUNA BIASA
+     *  ============================== */
     $app->get('/pengguna', function (Request $request, Response $response) use ($container) {
-    $view = $container->get('view');
-    $db = $container->get('db');
+        $view = $container->get('view');
+        $db = $container->get('db');
 
-    $posts = $db->select('posts', [
-        '[>]categories' => ['category_id' => 'id'],
-        '[>]users' => ['user_id' => 'id']
-    ], [
-        'posts.id',
-        'posts.title',
-        'posts.content',
-        'posts.created_at',
-        'categories.name(category)',
-        'users.username'
-    ], [
-        'ORDER' => ['posts.created_at' => 'DESC']
-    ]);
+        $posts = $db->select('posts', [
+            '[>]categories' => ['category_id' => 'id'],
+            '[>]users'      => ['user_id' => 'id']
+        ], [
+            'posts.id',
+            'posts.title',
+            'posts.content',
+            'posts.created_at',
+            'categories.name(category)',
+            'users.username'
+        ], [
+            'ORDER' => ['posts.created_at' => 'DESC']
+        ]);
 
-    return $view->render($response, 'pengguna.twig', [
-        'title' => 'Halaman Pengguna',
-        'posts' => $posts,
-        'session' => $_SESSION
-    ]);
-})->add(RoleMiddleware::only(['admin', 'kontributor', 'user']));
+        return $view->render($response, 'pengguna.twig', [
+            'title'   => 'Halaman Pengguna',
+            'posts'   => $posts,
+            'session'=> $_SESSION
+        ]);
+    })->add(RoleMiddleware::only(['admin', 'kontributor', 'user']));
 
+    /** ===============================
+     *  KOMENTAR & RATING
+     *  ============================== */
+    $app->post('/comments/add', [CommentController::class, 'add']);
+    $app->post('/comments/{id}/delete', [CommentController::class, 'delete'])->setName('comment.delete');
 
-    // $app->get('/story/{id}', [HomeController::class, 'showPost']);
-$app->post('/comments/add', [CommentController::class, 'add']);
+    $app->post('/ratings/add', [RatingController::class, 'add'])
+        ->add(RoleMiddleware::only(['admin', 'kontributor', 'user']));
 
-// routes
-$app->post('/ratings/add', [RatingController::class, 'add'])
-    ->add(RoleMiddleware::only(['user','kontributor','admin']));
-
+    /** ===============================
+     *  POST DETAIL (bisa dilihat semua)
+     *  ============================== */
     $app->get('/story/{id}', [PostController::class, 'show']);
-
-// pakai POST supaya aman dari pre‑fetch GET
-$app->post('/comments/{id}/delete', [CommentController::class, 'delete'])
-     ->setName('comment.delete');
-
-
-
 };
