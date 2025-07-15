@@ -10,6 +10,8 @@ use Controllers\RatingController;
 use Controllers\CommentController;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 return function (App $app) {
     $container = $app->getContainer();
@@ -66,6 +68,45 @@ return function (App $app) {
 
     $app->get('/admin/posts', [PostController::class, 'listAll'])->add(RoleMiddleware::only('admin'));
     $app->post('/admin/post/{id}/delete', [PostController::class, 'delete'])->add(RoleMiddleware::only('admin'));
+
+    $app->get('/register', [AuthController::class, 'showRegister']);
+$app->post('/register', [AuthController::class, 'register']);
+$app->get('/verify-email/{token}', [AuthController::class, 'verifyEmail']);
+$app->get('/forgot-password', [AuthController::class, 'showForgot']);
+$app->post('/forgot-password', [AuthController::class, 'sendResetLink']);
+$app->get('/reset-password/{token}', [AuthController::class, 'showResetForm']);
+$app->post('/reset-password/{token}', [AuthController::class, 'resetPassword']);
+
+$app->get('/test-email', function ($request, $response) {
+     $mail = new PHPMailer(true);
+
+    try {
+        // Konfigurasi Mailtrap
+        $mail->isSMTP();
+        $mail->Host = 'smtp.mailtrap.io';
+        $mail->SMTPAuth = true;
+        $mail->Username = '30f625197ecea8'; // Ganti dengan username Mailtrap kamu
+        $mail->Password = 'f2255a2156e684'; // Ganti dengan password Mailtrap kamu
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 2525;
+
+        // Info pengirim dan penerima
+        $mail->setFrom('noreply@your-app.com', 'Your App');
+        $mail->addAddress('email-tujuan@mail.com', 'Nama Tujuan'); // Ganti dengan alamat tujuan tes
+
+        // Konten email
+        $mail->isHTML(true);
+        $mail->Subject = 'Tes Kirim Email';
+        $mail->Body = '<h3>Halo!</h3><p>Email ini dikirim dari route <strong>/test-email</strong> menggunakan PHPMailer.</p>';
+
+        $mail->send();
+        $response->getBody()->write("✅ Email berhasil dikirim ke Mailtrap!");
+    } catch (Exception $e) {
+        $response->getBody()->write("❌ Gagal mengirim email: {$mail->ErrorInfo}");
+    }
+
+    return $response;
+});
 
     /** ===============================
      *  KONTRIBUTOR (tanpa group)

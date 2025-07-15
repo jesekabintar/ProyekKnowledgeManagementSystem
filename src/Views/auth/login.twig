@@ -14,7 +14,7 @@
                 </div>
             {% endif %}
 
-            <form method="POST" action="/login">
+            <form  id="loginForm">
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
                     <input type="text" name="username" id="username" class="form-control" required autofocus>
@@ -30,6 +30,9 @@
                     </div>
                 </div>
 
+                <div class=" text-end">
+    <a href="/forgot-password" class="text-decoration-none small">Lupa password?</a>
+</div>
                 <button type="submit" class="btn btn-primary w-100 mt-3">
                     <i class="bi bi-box-arrow-in-right"></i> Masuk
                 </button>
@@ -53,4 +56,50 @@ function togglePassword() {
     }
 }
 </script>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); // Cegah reload
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            // Redirect ke dashboard atau halaman utama
+            window.location.href = result.redirect || '/dashboard';
+        } else {
+            // Tampilkan error
+            showError(result.error || 'Login gagal.');
+        }
+    } catch (err) {
+        showError('Terjadi kesalahan saat login.');
+    }
+});
+
+function showError(message) {
+    const alertBox = document.querySelector('.alert');
+    if (alertBox) {
+        alertBox.textContent = message;
+        alertBox.style.display = 'block';
+    } else {
+        const newAlert = document.createElement('div');
+        newAlert.className = 'alert alert-danger';
+        newAlert.textContent = message;
+        document.querySelector('.card-body').prepend(newAlert);
+    }
+}
+</script>
+
 {% endblock %}

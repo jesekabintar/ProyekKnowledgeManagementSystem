@@ -64,6 +64,9 @@ $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 $app->add(TwigMiddleware::createFromContainer($app, Twig::class));
 
+
+
+
 // Load routes
 (require __DIR__ . '/../routes/web.php')($app);
 

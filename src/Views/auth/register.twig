@@ -1,0 +1,46 @@
+{% extends "layout/layout.twig" %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 500px;">
+    <div class="card shadow">
+        <div class="card-body">
+            <h3 class="mb-4 text-center">
+                <i class="bi bi-person-plus"></i> Registrasi
+            </h3>
+
+            {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+            {% if success %}
+                <div class="alert alert-success">{{ success }}</div>
+            {% endif %}
+
+            <form method="POST" action="/register">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" name="username" id="username" class="form-control" required autofocus>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" name="email" id="email" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" id="password" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label">Konfirmasi Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 mt-2">
+                    <i class="bi bi-check-circle"></i> Daftar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

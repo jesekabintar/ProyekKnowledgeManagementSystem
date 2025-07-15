@@ -1,0 +1,36 @@
+{% extends "layout/layout.twig" %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 500px;">
+    <div class="card shadow">
+        <div class="card-body">
+            <h3 class="mb-4 text-center">
+                <i class="bi bi-shield-lock"></i> Atur Ulang Password
+            </h3>
+
+            {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+            {% if success %}
+                <div class="alert alert-success">{{ success }}</div>
+            {% endif %}
+
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password Baru</label>
+                    <input type="password" name="password" id="password" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label">Konfirmasi Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-arrow-repeat"></i> Reset Password
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
