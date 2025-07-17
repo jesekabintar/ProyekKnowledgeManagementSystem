@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title ?? 'Dashboard Admin' }}</title>
+
+  {# Link ke file CSS utama dashboard #}
+  <link rel="stylesheet" href="/asset/css/dashboard.css">
+</head>
+<body>
+
+  <div class="sidebar">
+  <h2>Admin</h2>
+  <nav>
+    <ul>
+      <li><a href="/admin"><span>🏠</span> Dashboard</a></li>
+      <li><a href="/admin/kategori-tag"><span>🏷️</span> Kategori & Tag</a></li>
+      <li><a href="/logout"><span>🚪</span> Logout</a></li>
+    </ul>
+  </nav>
+</div>
+
+
+
+  {# Area Konten Utama #}
+  <main class="main-content">
+    {% block content %}
+    {% endblock %}
+  </main>
+
+</body>
+</html>

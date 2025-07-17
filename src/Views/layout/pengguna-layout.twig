@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title ?? 'Dashboard Pengguna' }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .sidebar {
+      background-color: #1f2b55;
+      color: #fff;
+      width: 240px;
+      min-height: 100vh;
+      padding: 30px 20px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+      position: fixed;
+    }
+
+    .sidebar h4 {
+      font-weight: bold;
+      margin-bottom: 30px;
+      color: #fff;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .sidebar ul li {
+      margin-bottom: 16px;
+    }
+
+    .sidebar ul li a {
+      display: block;
+      padding: 10px 14px;
+      color: #e0e0e0;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+      background-color: #0d6efd;
+      color: #fff;
+    }
+
+    .main-content {
+      margin-left: 240px;
+      padding: 32px 24px;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: relative;
+        width: 100%;
+        min-height: auto;
+        padding: 20px;
+        border-bottom: 1px solid #dee2e6;
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h4>👤 Pengguna</h4>
+    <ul>
+      <li><a href="/pengguna" class="{{ active == 'beranda' ? 'active' : '' }}">🏠 Beranda</a></li>
+  
+      <li><a href="/logout" class="text-danger">🚪 Logout</a></li>
+    </ul>
+  </div>
+
+  <!-- Konten Utama -->
+  <div class="main-content">
+    {% block content %}{% endblock %}
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -26,10 +26,14 @@ class AdminController
     ]);
 
     return $this->view->render($response, 'admin/dashboard.twig', [
-        'title' => 'Admin Dashboard',
-        'user' => $user,
-        'users' => $users
-    ]);
+    'total_users' => $this->db->count('users'),
+    'total_posts' => $this->db->count('posts'),
+    'total_categories' => $this->db->count('categories'),
+    'users' => $users,
+    'session' => $_SESSION
+]);
+
+
 }
 
 public function editUser(Request $request, Response $response, array $args): Response

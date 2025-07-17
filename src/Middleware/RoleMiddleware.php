@@ -16,6 +16,10 @@ class RoleMiddleware implements MiddlewareInterface
         $this->allowedRoles = $allowedRoles;
     }
 
+    // middleware/AuthMiddleware.php
+
+
+
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         $user = $_SESSION['user'] ?? null;
